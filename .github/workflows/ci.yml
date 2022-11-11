@@ -39,6 +39,6 @@ jobs:
       run: ./build.sh
     - if: matrix.runs-on == 'windows-latest' && github.ref != 'refs/heads/main' && !contains(github.ref, 'refs/tags/')
       run: ./build.ps1
-    - if: (matrix.runs-on == 'windows-latest') && (github.ref == 'refs/heads/main' || contains(github.ref, 'refs/tags/'))
+    - if: (matrix.runs-on == 'windows-latest')
       run: |
         dotnet nuget push .\nuget\*.nupkg -s https://www.myget.org/F/dangl-internal/api/v2/package -k ${{ secrets.MYGET_PUSH_KEY }}
