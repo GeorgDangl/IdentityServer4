@@ -9,13 +9,12 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v1
-      - name: Cache .nuke/temp, ~/.nuget/packages
+      - name: Cache ~/.nuget/packages
         uses: actions/cache@v2
         with:
           path: |
-            .nuke/temp
             ~/.nuget/packages
-          key: ${{ runner.os }}-${{ hashFiles('**/*.csproj') }}
+          key: ${{ runner.os }}-${{ hashFiles('**/*.csproj', '**/*.targets') }}
       - uses: actions/setup-dotnet@v3
         with:
           dotnet-version: '7.0'
