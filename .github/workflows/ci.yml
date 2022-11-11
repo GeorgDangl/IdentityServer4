@@ -42,3 +42,6 @@ jobs:
     - if: (matrix.runs-on == 'windows-latest')
       run: |
         dotnet nuget push .\nuget\*.nupkg -s https://www.myget.org/F/dangl-internal/api/v2/package -k ${{ secrets.MYGET_PUSH_KEY }}
+    - if: (matrix.runs-on == 'windows-latest' && (github.ref == 'refs/heads/main' || contains(github.ref, 'refs/tags/')))
+      run: |
+        dotnet nuget push .\nuget\*.nupkg -s https://api.nuget.org/v3/index.json -k ${{ secrets.NUGET_PUSH_KEY }}
