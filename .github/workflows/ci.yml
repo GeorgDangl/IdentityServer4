@@ -21,7 +21,11 @@ jobs:
     name: ${{ matrix.runs-on }}
     runs-on: ${{ matrix.runs-on }}
     steps:
-    - uses: actions/checkout@af513c7a016048ae468971c52ed77d9562c7c819
+    - name: Checkout repository
+      uses: actions/checkout@v1
+    - uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: '7.0'
     - run: dotnet --info
     
     - if: contains(matrix.runs-on, 'macOS') || contains(matrix.runs-on, 'ubuntu')
