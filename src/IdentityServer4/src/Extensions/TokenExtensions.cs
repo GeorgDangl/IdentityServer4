@@ -103,12 +103,12 @@ namespace IdentityServer4.Extensions
                     if (group.Skip(1).Any())
                     {
                         // add as array
-                        payload.Add(group.Key, group.Select(x => x.JsonValue).ToArray());
+                        payload.Add(group.Key, group.Select(x => x.JsonValue.ToObject<Dictionary<string, object>>()).ToArray());
                     }
                     else
                     {
                         // add just one
-                        payload.Add(group.Key, group.First().JsonValue);
+                        payload.Add(group.Key, group.First().JsonValue.ToObject<Dictionary<string, object>>());
                     }
                 }
 
@@ -130,7 +130,7 @@ namespace IdentityServer4.Extensions
                     }
 
                     // add just one array for the group/key/claim type
-                    payload.Add(group.Key, newArr.ToArray());
+                    payload.Add(group.Key, newArr.Select(x => x.ToObject<Dictionary<string, object>>()).ToArray());
                 }
 
                 var unsupportedJsonTokens = jsonTokens.Except(jsonObjects).Except(jsonArrays).ToArray();
