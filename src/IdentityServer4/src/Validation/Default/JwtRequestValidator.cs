@@ -211,6 +211,14 @@ namespace IdentityServer4.Validation
                         case JArray jarr:
                             payload.Add(key, jarr.ToString(Formatting.None));
                             break;
+
+                        default:
+                            // We're likely to get types of
+                            // Microsoft.IdentityModel.Json.Linq.JObject
+                            // after the new version of System.IdentityModel.Tokens.Jwt
+                            var stringValue = value.ToString();
+                            payload.Add(key, stringValue);
+                            break;
                     }
                 }
             }
