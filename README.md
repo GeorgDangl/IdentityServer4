@@ -1,3 +1,7 @@
+# Fork Info
+
+This repository is a fork that essentially just provides compatibility with .NET 7 and newer versions of AutoMapper.
+
 # Important update
 This organization is not maintained anymore besides critical security bugfixes (if feasible). This organization will be archived when .NET Core 3.1 end of support is reached (3rd Dec 2022). All new development is happening in the new [Duende Software](https://github.com/duendesoftware) organization. 
 

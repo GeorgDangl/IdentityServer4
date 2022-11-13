@@ -1,0 +1,22 @@
+name: test
+
+on: [push]
+
+jobs:
+  test:
+    name: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v1
+      - name: Cache ~/.nuget/packages
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.nuget/packages
+          key: ${{ runner.os }}-${{ hashFiles('**/*.csproj', '**/*.targets') }}
+      - uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '7.0'
+      - name: Run './build.sh Test'
+        run: ./build.sh Test

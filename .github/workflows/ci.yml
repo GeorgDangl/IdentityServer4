@@ -5,6 +5,7 @@ on:
     branches:
     - main
     - features/**
+    - feature/**
     tags:
     - '*.*.*'
   pull_request:
@@ -17,20 +18,30 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        runs-on: [macOS-latest, ubuntu-latest, windows-latest]
+        runs-on: [ubuntu-latest, windows-latest]
     name: ${{ matrix.runs-on }}
     runs-on: ${{ matrix.runs-on }}
     steps:
-    - uses: actions/checkout@af513c7a016048ae468971c52ed77d9562c7c819
+    - name: Checkout repository
+      uses: actions/checkout@v1
+    - uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: '7.0'
+    - name: Cache ~/.nuget/packages
+      uses: actions/cache@v2
+      with:
+        path: |
+          ~/.nuget/packages
+        key: ${{ runner.os }}-${{ hashFiles('**/*.csproj', '**/*.targets') }}
     - run: dotnet --info
     
     - if: contains(matrix.runs-on, 'macOS') || contains(matrix.runs-on, 'ubuntu')
       run: ./build.sh
     - if: matrix.runs-on == 'windows-latest' && github.ref != 'refs/heads/main' && !contains(github.ref, 'refs/tags/')
       run: ./build.ps1
-    - if: (matrix.runs-on == 'windows-latest') && (github.ref == 'refs/heads/main' || contains(github.ref, 'refs/tags/'))
-      env:
-        SignClientSecret: ${{ secrets.SIGNCLIENT }}
+    - if: (matrix.runs-on == 'windows-latest')
       run: |
-        ./build.ps1 sign
-        dotnet nuget push .\nuget\*.nupkg -s https://www.myget.org/F/identity/api/v2/package -k ${{ secrets.MYGET }}
+        dotnet nuget push .\nuget\*.nupkg -s https://www.myget.org/F/dangl-internal/api/v2/package -k ${{ secrets.MYGET_PUSH_KEY }}
+    - if: (matrix.runs-on == 'windows-latest' && (github.ref == 'refs/heads/main' || contains(github.ref, 'refs/tags/')))
+      run: |
+        dotnet nuget push .\nuget\*.nupkg -s https://api.nuget.org/v3/index.json -k ${{ secrets.NUGET_PUSH_KEY }}
