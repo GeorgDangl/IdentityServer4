@@ -6,6 +6,9 @@ Welcome to IdentityServer4 (latest)
 
 IdentityServer4 is an OpenID Connect and OAuth 2.0 framework for ASP.NET Core.
 
+.. note::
+   This is a fork maintained at https://github.com/GeorgDangl/IdentityServer4
+
 .. warning:: 
    As of Oct, 1st 2020, we started a new `company <https://duendesoftware.com/>`_. 
    All new development will happen in our new `organization <https://github.com/duendesoftware>`_. 
