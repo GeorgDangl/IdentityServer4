@@ -78,3 +78,22 @@ IdentityServer4 is built using the following great open source projects and free
 -   [GitReleaseManager](https://github.com/GitTools/GitReleaseManager)
 
 ..and last but not least a big thanks to all our [contributors](https://github.com/IdentityServer/IdentityServer4/graphs/contributors)!
+
+
+## Markdown documentation publishing
+
+`BuildDocumentation` also generates `output/docs-markdown` and `output/docs-markdown.zip`.
+Start with `index.md` (the source README), or `toc.md` for all articles and API pages.
+Changelog/license text and linked documentation assets are included; the ZIP has no
+enclosing directory.
+
+The Markdown renderer converts the existing published Sphinx article HTML, including
+API signatures, code examples and anchors. This keeps the current documentation
+toolchain and public project boundaries intact, without requiring newer DocFX or
+migrating the legacy NUKE build. It does not modify documentation sources.
+
+`UploadDocumentation` uploads HTML first, then sends the Markdown ZIP to
+`/API/MarkdownDocuments/Upload` with the same API key and exact version. Generation
+or upload errors fail publishing; existing branch gates and version-conflict policies
+are preserved. `TestMarkdownDocumentation` exercises packaging, links, assets,
+failure handling and the multipart contract using only a local HTTP server.

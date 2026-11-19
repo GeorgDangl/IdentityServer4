@@ -28,11 +28,17 @@ class Build : NukeBuild
     [Parameter] readonly string DocuApiKey;
     [Parameter] readonly string DocsVersion;
 
+    Target TestMarkdownDocumentation => _ => _
+        .Executes(() => MarkdownDocumentationTests.Run(RootDirectory / "output" / "markdown-tests"));
+
     Target BuildDocumentation => _ => _
         .Executes(() =>
         {
             EnsureCleanDirectory(DocsOutputDirectory);
             DockerTasks.Docker($"run -v {DocsDirectory}:/docs --rm sphinxdoc/sphinx ./generate_docs.sh");
+
+            MarkdownDocumentation.Build(RootDirectory, DocsOutputDirectory,
+                RootDirectory / "output" / "docs-markdown", requireApi: false, requireManifest: false);
         });
 
     Target UploadDocumentation => _ => _
@@ -42,11 +48,14 @@ class Build : NukeBuild
         .Requires(() => DocsVersion)
         .Executes(() =>
         {
-            WebDocu(s => s
-                .SetDocuBaseUrl(DocuBaseUrl)
-                .SetDocuApiKey(DocuApiKey)
-                .SetSourceDirectory(DocsOutputDirectory)
-                .SetVersion(DocsVersion)
-                .SetSkipForVersionConflicts(true));
+            MarkdownDocumentation.Publish(DocuBaseUrl, DocuApiKey, DocsVersion,
+                RootDirectory / "output" / "docs-markdown.zip",
+                () => WebDocu(s => s
+                    .SetDocuBaseUrl(DocuBaseUrl)
+                    .SetDocuApiKey(DocuApiKey)
+                    .SetSourceDirectory(DocsOutputDirectory)
+                    .SetVersion(DocsVersion)
+                    .SetSkipForVersionConflicts(false)),
+                skipForVersionConflicts: true);
         });
 }
