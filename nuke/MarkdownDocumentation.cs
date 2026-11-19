@@ -4,7 +4,6 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Net;
-using System.Net.Http;
 using System.Runtime.Serialization.Json;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -136,49 +135,6 @@ internal static class MarkdownDocumentation
                 .Select(file => "- [" + file + "](" + string.Join("/", file.Split('/').Select(Uri.EscapeDataString)) + ")")) + "\n");
         File.AppendAllText(index, "\n\n[Documentation contents](toc.md)\n", new UTF8Encoding(false));
         ZipFile.CreateFromDirectory(markdownDirectory, archive, CompressionLevel.Optimal, false);
-    }
-
-    public static void Publish(string baseUrl, string apiKey, string version, string packagePath,
-        Action uploadHtml, bool skipForVersionConflicts = false)
-    {
-        if (string.IsNullOrWhiteSpace(version))
-            throw new ArgumentException("An explicit documentation version is required.", "version");
-        if (string.IsNullOrWhiteSpace(baseUrl) || string.IsNullOrWhiteSpace(apiKey))
-            throw new ArgumentException("Documentation URL and API key are required.");
-        using (var archive = ZipFile.OpenRead(packagePath))
-        {
-            if (archive.GetEntry("index.md") == null)
-                throw new InvalidOperationException("The Markdown package has no root index.md.");
-        }
-        try
-        {
-            uploadHtml();
-        }
-        catch (Exception exception)
-        {
-            // Legacy WebDocu returns void, so let it throw on a version conflict
-            // and preserve the existing skip policy here for both uploads.
-            if (skipForVersionConflicts && exception.Message.StartsWith(
-                "Upload failed with status code: Conflict", StringComparison.Ordinal))
-                return;
-            throw;
-        }
-        using (var client = new HttpClient())
-        using (var request = new HttpRequestMessage(HttpMethod.Post,
-            baseUrl.TrimEnd('/') + "/API/MarkdownDocuments/Upload"))
-        using (var content = new MultipartFormDataContent())
-        using (var stream = File.OpenRead(packagePath))
-        {
-            content.Add(new StringContent(apiKey), "ApiKey");
-            content.Add(new StringContent(version), "Version");
-            content.Add(new StreamContent(stream), "MarkdownPackage", Path.GetFileName(packagePath));
-            request.Content = content;
-            using (var response = client.SendAsync(request).GetAwaiter().GetResult())
-            {
-                if (!response.IsSuccessStatusCode)
-                    throw new InvalidOperationException("Markdown upload failed with status code: " + response.StatusCode);
-            }
-        }
     }
 
     private static string RewriteUrl(string url, string page, IEnumerable<string> pages,

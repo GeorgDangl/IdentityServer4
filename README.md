@@ -79,21 +79,19 @@ IdentityServer4 is built using the following great open source projects and free
 
 ..and last but not least a big thanks to all our [contributors](https://github.com/IdentityServer/IdentityServer4/graphs/contributors)!
 
-
 ## Markdown documentation publishing
 
-`BuildDocumentation` also generates `output/docs-markdown` and `output/docs-markdown.zip`.
-Start with `index.md` (the source README), or `toc.md` for all articles and API pages.
-Changelog/license text and linked documentation assets are included; the ZIP has no
-enclosing directory.
+The documentation builder uses Fallout.Common 10.5.0 and requires .NET SDK 10.0.100
+or later. Product target frameworks are unchanged. Run `docs/build.sh` or `docs/build.ps1`; the repository's root product build
+and SDK selection are unchanged. Sphinx still generates the published HTML using
+the existing Docker workflow. Its article DOM is converted with ReverseMarkdown
+because Sphinx does not provide DocFX's native Markdown metadata output.
 
-The Markdown renderer converts the existing published Sphinx article HTML, including
-API signatures, code examples and anchors. This keeps the current documentation
-toolchain and public project boundaries intact, without requiring newer DocFX or
-migrating the legacy NUKE build. It does not modify documentation sources.
+The Markdown directory is `output/docs-markdown`; its sibling `.zip` has a root
+`index.md` and includes mapped documentation assets. `UploadDocumentation` uses
+the official Dangl.Fallout.WebDocu 8.0.1 package with `SetMarkdownPackagePath`,
+the existing explicit version, credentials, downloadable assets and conflict policy.
+No custom HTTP uploader is used. Deployment targets require real credentials;
+use `--help` or `--plan` for safe build-graph inspection.
 
-`UploadDocumentation` uploads HTML first, then sends the Markdown ZIP to
-`/API/MarkdownDocuments/Upload` with the same API key and exact version. Generation
-or upload errors fail publishing; existing branch gates and version-conflict policies
-are preserved. `TestMarkdownDocumentation` exercises packaging, links, assets,
-failure handling and the multipart contract using only a local HTTP server.
+`TestMarkdownDocumentation` checks packaging, navigation and asset preservation locally.

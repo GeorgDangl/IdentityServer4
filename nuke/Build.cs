@@ -1,21 +1,24 @@
+using Serilog;
 using System;
 using System.Linq;
-using Nuke.Common;
-using Nuke.Common.CI;
-using Nuke.Common.Execution;
-using Nuke.Common.IO;
-using Nuke.Common.ProjectModel;
-using Nuke.Common.Tooling;
-using Nuke.Common.Utilities.Collections;
-using static Nuke.Common.EnvironmentInfo;
-using static Nuke.Common.IO.FileSystemTasks;
-using static Nuke.Common.IO.PathConstruction;
-using static Nuke.WebDocu.WebDocuTasks;
-using Nuke.Common.Tools.Docker;
-using Nuke.WebDocu;
+using Fallout.Common;
+using Fallout.Common.CI;
+using Fallout.Common.Execution;
+using Fallout.Common.IO;
+using Fallout.Common.ProjectModel;
+using Fallout.Common.Tooling;
+using Fallout.Common.Utilities.Collections;
+using static Fallout.Common.EnvironmentInfo;
+using static Fallout.Common.IO.PathConstruction;
+using static Fallout.WebDocu.WebDocuTasks;
+using Fallout.Common.Tools.Docker;
+using Fallout.WebDocu;
 
-class Build : NukeBuild
+class Build : FalloutBuild
 {
+    Target TestMarkdownDocumentation => _ => _
+        .Executes(() => MarkdownDocumentationTests.Run(RootDirectory / "output" / "markdown-tests"));
+
     public static int Main() => Execute<Build>(x => x.BuildDocumentation);
 
     AbsolutePath DocsDirectory => RootDirectory / "docs";
@@ -28,13 +31,10 @@ class Build : NukeBuild
     [Parameter] readonly string DocuApiKey;
     [Parameter] readonly string DocsVersion;
 
-    Target TestMarkdownDocumentation => _ => _
-        .Executes(() => MarkdownDocumentationTests.Run(RootDirectory / "output" / "markdown-tests"));
-
     Target BuildDocumentation => _ => _
         .Executes(() =>
         {
-            EnsureCleanDirectory(DocsOutputDirectory);
+            DocsOutputDirectory.CreateOrCleanDirectory();
             DockerTasks.Docker($"run -v {DocsDirectory}:/docs --rm sphinxdoc/sphinx ./generate_docs.sh");
 
             MarkdownDocumentation.Build(RootDirectory, DocsOutputDirectory,
@@ -48,14 +48,12 @@ class Build : NukeBuild
         .Requires(() => DocsVersion)
         .Executes(() =>
         {
-            MarkdownDocumentation.Publish(DocuBaseUrl, DocuApiKey, DocsVersion,
-                RootDirectory / "output" / "docs-markdown.zip",
-                () => WebDocu(s => s
+            WebDocu(s => s
                     .SetDocuBaseUrl(DocuBaseUrl)
                     .SetDocuApiKey(DocuApiKey)
                     .SetSourceDirectory(DocsOutputDirectory)
+                    .SetMarkdownPackagePath(RootDirectory / "output" / "docs-markdown.zip")
                     .SetVersion(DocsVersion)
-                    .SetSkipForVersionConflicts(false)),
-                skipForVersionConflicts: true);
+                    .SetSkipForVersionConflicts(true));
         });
 }

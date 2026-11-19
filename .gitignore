@@ -213,3 +213,5 @@ workspace.xml
 src/IdentityServer4/host/identityserver.db
 tempkey.jwk
 /output/
+
+.fallout/temp/
